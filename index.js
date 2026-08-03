@@ -14,7 +14,10 @@ const {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  PermissionFlagsBits
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+  REST,
+  Routes
 } = require('discord.js');
 
 const cliente = new Client({
@@ -414,6 +417,7 @@ async function handleDelsel(i, id, userId) {
 
 cliente.once(Events.ClientReady, async c => {
   console.log(`✅ ${c.user.tag} online`);
+  await registrarComandos();
 });
 
 cliente.on(Events.InteractionCreate, async i => {
@@ -473,5 +477,23 @@ cliente.on(Events.InteractionCreate, async i => {
     }
   } catch (e) { console.error('Erro interação:', e); }
 });
+
+async function registrarComandos() {
+  const comandos = [
+    new SlashCommandBuilder().setName('menu').setDescription('Abre o menu de downloads (privado)'),
+    new SlashCommandBuilder().setName('limparmenu').setDescription('[ADMIN] Apaga mensagens antigas do bot no canal').setDefaultMemberPermissions(0)
+  ].map(c => c.toJSON());
+
+  try {
+    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
+    await rest.put(
+      process.env.GUILD_ID ? Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID) : Routes.applicationCommands(process.env.CLIENT_ID),
+      { body: comandos }
+    );
+    console.log('✅ Comandos registrados');
+  } catch (e) {
+    console.error('❌ Falha ao registrar comandos:', e.message);
+  }
+}
 
 cliente.login(process.env.DISCORD_TOKEN);
