@@ -8,6 +8,16 @@
 
 ## Histórico
 
+### [03/08/2026] - Limpeza total de menus duplicados no canal
+Arquivos alterados:
+- `index.js`
+
+O que foi feito:
+- `postarMenuFixo` agora varre o canal INTEIRO (loop paginado de 100 em 100 até acabar) apagando TODAS as mensagens do bot.
+- Remove `menu.json` antes de postar e envia apenas 1 menu fixo.
+- Garante que só exista 1 menu no canal, mesmo que houvesse menus antigos/duplicados de versões anteriores.
+- Para ativar: rodar `/resetmenu` ou reiniciar o bot (postarMenuFixo é chamado no start).
+
 ### [03/08/2026] - Remover fallback que criava menu ao voltar
 Arquivos alterados:
 - `index.js`

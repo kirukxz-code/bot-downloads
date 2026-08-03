@@ -280,22 +280,22 @@ async function atualizarModalSeguro(i, payload) {
 async function postarMenuFixo() {
   const ch = cliente.channels.cache.get(CANAL_PERMITIDO);
   if (!ch) return console.log('❌ Canal não encontrado');
-  
-  if (fs.existsSync(ARQUIVO_MENU)) {
-    try {
-      const old = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
-      const oldMsg = await ch.messages.fetch(old.msgId).catch(()=>null);
-      if (oldMsg) await oldMsg.delete().catch(()=>{});
-    } catch {}
-  }
 
-  // Apaga mensagens antigas do próprio bot no canal (ex: menus de versões anteriores)
+  // Apaga TODAS as mensagens do próprio bot no canal (menus antigos/duplicados)
   try {
-    const msgs = await ch.messages.fetch({ limit: 50 });
-    for (const [, m] of msgs) {
-      if (m.author.id === cliente.user.id) await m.delete().catch(()=>{});
+    let antes = null;
+    while (true) {
+      const msgs = await ch.messages.fetch({ limit: 100, before: antes || undefined });
+      if (!msgs.size) break;
+      for (const [, m] of msgs) {
+        if (m.author.id === cliente.user.id) await m.delete().catch(()=>{});
+      }
+      antes = msgs.last().id;
+      if (msgs.size < 100) break;
     }
   } catch {}
+
+  fs.rmSync(ARQUIVO_MENU, { force: true });
 
   const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
   fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id, chId: ch.id }));
