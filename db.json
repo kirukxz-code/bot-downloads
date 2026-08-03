@@ -1,0 +1,39 @@
+{
+  "links": {
+    "clips": [],
+    "intros": [],
+    "songs": [],
+    "plugin-ins": [
+      {
+        "name": "video copilot",
+        "url": "https://drive.google.com/drive/folders/1yrL9wjIqQPRoKoDwPEpgO5SrUXWdkFDX",
+        "size": "Desconhecido"
+      }
+    ],
+    "presets-am": [],
+    "presets-ae": []
+  },
+  "categories": {
+    "clips": {},
+    "intros": {},
+    "songs": {},
+    "plugin-ins": {},
+    "presets-am": {},
+    "presets-ae": {}
+  },
+  "main": {},
+  "cfg": {
+    "clips": {},
+    "intros": {},
+    "songs": {},
+    "plugin-ins": {
+      "title": null,
+      "desc": null,
+      "banner": null,
+      "icon": null,
+      "foot": null
+    },
+    "presets-am": {},
+    "presets-ae": {}
+  }
+}
