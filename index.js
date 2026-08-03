@@ -226,6 +226,16 @@ async function responderSeguro(i, payload) {
   } catch {}
 }
 
+async function atualizarModalSeguro(i, payload) {
+  try {
+    await i.update(payload);
+  } catch (e) {
+    console.error('atualizarModal erro:', e.message);
+    try { await i.reply(payload); } catch {}
+    try { await i.followUp(payload); } catch {}
+  }
+}
+
 async function postarMenuFixo() {
   const ch = cliente.channels.cache.get(CANAL_PERMITIDO);
   if (!ch) return console.log('❌ Canal não encontrado');
@@ -312,7 +322,8 @@ cliente.on(Events.InteractionCreate, async i => {
         const chave = i.customId.replace('del_', '');
         const sel = criarSelectRemover(chave);
         if (!sel) return responderSeguro(i, { embeds: [erro('Vazio', 'Nada para remover.')], ephemeral: true });
-        return responderSeguro(i, { components: [sel], ephemeral: true });
+        try { await i.deferReply({ ephemeral: true }); } catch {}
+        return i.editReply({ components: [sel] });
       }
       if (i.customId.startsWith('cfg_')) {
         if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
@@ -330,7 +341,7 @@ cliente.on(Events.InteractionCreate, async i => {
         LINKS[chave].push({ nome: n, url: u, tamanho: s }); DB.links = LINKS; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, true);
-        return responderSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        return atualizarModalSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
       }
       if (i.customId.startsWith('cfg_')) {
         const chave = i.customId.replace('cfg_', '');
@@ -352,7 +363,7 @@ cliente.on(Events.InteractionCreate, async i => {
         }; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, true);
-        return responderSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        return atualizarModalSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
       }
       if (i.customId === 'cfg_main') {
         DB.main = {
@@ -362,7 +373,7 @@ cliente.on(Events.InteractionCreate, async i => {
           rodape: i.fields.getTextInputValue('rodape') || null
         }; salvarDB(DB);
         garantirMenuExiste();
-        return responderSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
+        return atualizarModalSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
       }
     }
   } catch (e) { console.error('Erro interação:', e); }
