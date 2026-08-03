@@ -297,35 +297,24 @@ function payloadItem(item, admin, userId) {
   return { embeds: [criarEmbedItem(item)], components: criarBotoesItem(item, admin, userId) };
 }
 
-function criarBotoesMenuFixo(pag) {
-  const rows = [];
-  const inicio = pag * MAX_BOTOES_POR_PAGINA;
-  const itensPagina = DB.itens.slice(inicio, inicio + MAX_BOTOES_POR_PAGINA);
+function criarSelectMenuFixo(pag) {
+  const inicio = pag * 25;
+  const itensPagina = DB.itens.slice(inicio, inicio + 25);
 
-  for (let i = 0; i < itensPagina.length; i += 5) {
-    const row = new ActionRowBuilder();
-    for (const it of itensPagina.slice(i, i + 5)) {
-      row.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`fx_item_${it.id}`)
-          .setLabel(it.titulo.slice(0, 80))
-          .setEmoji(it.icone || '📄')
-          .setStyle(ButtonStyle.Primary)
-      );
-    }
-    rows.push(row);
-  }
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('fx_sel')
+    .setPlaceholder('🔽  Escolha o que deseja baixar...')
+    .addOptions(itensPagina.map(it => new StringSelectMenuOptionBuilder()
+      .setLabel(it.titulo.slice(0, 100))
+      .setDescription(it.sub ? it.sub.slice(0, 100) : `${(it.links || []).length} download(s)`)
+      .setValue(it.id)
+      .setEmoji(it.icone || '📄')));
 
-  const nav = new ActionRowBuilder();
-  if (pag > 0) nav.addComponents(new ButtonBuilder().setCustomId(`fx_pag_${pag - 1}`).setLabel('◀ Anterior').setStyle(ButtonStyle.Secondary));
-  if (inicio + MAX_BOTOES_POR_PAGINA < DB.itens.length) nav.addComponents(new ButtonBuilder().setCustomId(`fx_pag_${pag + 1}`).setLabel('Próxima ▶').setStyle(ButtonStyle.Secondary));
-  if (nav.components.length) rows.push(nav);
-
-  return rows;
+  return [new ActionRowBuilder().addComponents(select)];
 }
 
 function payloadMenuFixo(pag) {
-  return { embeds: [criarEmbedPrincipal(pag)], components: criarBotoesMenuFixo(pag) };
+  return { embeds: [criarEmbedPrincipal(pag)], components: criarSelectMenuFixo(pag) };
 }
 
 async function postarMenuFixo() {
@@ -534,18 +523,6 @@ cliente.on(Events.InteractionCreate, async i => {
     }
 
     if (i.isButton()) {
-      if (i.customId.startsWith('fx_item_')) {
-        const id = i.customId.replace('fx_item_', '');
-        const item = acharItem(id);
-        if (!item) return responderSeguro(i, { embeds: [erro('Não encontrado', 'Este botão não existe mais.')], ephemeral: true });
-        const admin = ehAdmin(i.member);
-        return responderSeguro(i, { ...payloadItem(item, admin, i.user.id), ephemeral: true });
-      }
-      if (i.customId.startsWith('fx_pag_')) {
-        const pag = parseInt(i.customId.replace('fx_pag_', ''));
-        return atualizarSeguro(i, payloadMenuFixo(pag));
-      }
-
       const { prefix, id, userId } = parseCustom(i.customId);
       if (!ehDono(i, userId)) return responderSeguro(i, { embeds: [erro('Não autorizado', 'Abra seu próprio menu com /menu.')], ephemeral: true });
 
@@ -565,6 +542,14 @@ cliente.on(Events.InteractionCreate, async i => {
     }
 
     if (i.isStringSelectMenu()) {
+      if (i.customId === 'fx_sel') {
+        const id = i.values[0];
+        const item = acharItem(id);
+        if (!item) return responderSeguro(i, { embeds: [erro('Não encontrado', 'Este item não existe mais.')], ephemeral: true });
+        const admin = ehAdmin(i.member);
+        return responderSeguro(i, { ...payloadItem(item, admin, i.user.id), ephemeral: true });
+      }
+
       const { id, userId } = parseCustom(i.customId);
       if (!ehDono(i, userId)) return responderSeguro(i, { embeds: [erro('Não autorizado', 'Abra seu próprio menu com /menu.')], ephemeral: true });
       if (i.customId.startsWith('dellinksel_')) return handleDelsel(i, id, userId);
