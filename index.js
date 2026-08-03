@@ -130,7 +130,8 @@ function criarEmbedCategoria(chave) {
     corpo += `📦  ${negrito(`${itens.length} arquivo${itens.length > 1 ? 's' : ''} disponível${itens.length > 1 ? 'eis' : ''}`)}\n\n`;
     corpo += itens.map((l, i) => {
       const num = negrito(`${i + 1}.`);
-      return `${num.padStart(6)}  [${l.nome}](${l.url})  \`${l.tamanho}\``;
+      const tam = l.tamanho && l.tamanho !== 'Desconhecido' ? `  \`${l.tamanho}\`` : '';
+      return `${num.padStart(6)}  [${l.nome}](${l.url})${tam}`;
     }).join('\n');
   } else {
     corpo += `📭  *Nenhum arquivo cadastrado.*\n\n`;
@@ -485,7 +486,7 @@ cliente.on(Events.InteractionCreate, async i => {
       }
       if (i.customId.startsWith('add_')) {
         const chave = i.customId.replace('add_', '');
-        const n = i.fields.getTextInputValue('n'), u = i.fields.getTextInputValue('u'), s = i.fields.getTextInputValue('s') || 'Desconhecido';
+        const n = i.fields.getTextInputValue('n'), u = i.fields.getTextInputValue('u'), s = (i.fields.getTextInputValue('s') || '').trim();
         if (!LINKS[chave]) LINKS[chave] = [];
         LINKS[chave].push({ nome: n, url: u, tamanho: s }); DB.links = LINKS; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);

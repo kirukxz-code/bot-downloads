@@ -6,6 +6,15 @@
 
 ## Histórico
 
+### [03/08/2026] - Não mostrar "Desconhecido" em links
+Arquivos alterados:
+- `index.js`, `db.json`
+
+O que foi feito:
+- Exibição agora só mostra o tamanho se foi informado (some "Desconhecido") — index.js:133.
+- Modal de adicionar salva tamanho vazio em vez de "Desconhecido" quando vazio (index.js:489).
+- db.json local: "size": "Desconhecido" → "" (os itens reais estão no disco do Railway).
+
 ### [03/08/2026] - Padrão de 1 único menu (bulkDelete + verificação periódica)
 Arquivos alterados:
 - `index.js`
