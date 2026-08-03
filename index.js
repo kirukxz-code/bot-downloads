@@ -238,6 +238,14 @@ async function postarMenuFixo() {
     } catch {}
   }
 
+  // Apaga mensagens antigas do próprio bot no canal (ex: menus de versões anteriores)
+  try {
+    const msgs = await ch.messages.fetch({ limit: 50 });
+    for (const [, m] of msgs) {
+      if (m.author.id === cliente.user.id) await m.delete().catch(()=>{});
+    }
+  } catch {}
+
   const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
   fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id, chId: ch.id }));
   console.log('✅ Menu fixo postado');
