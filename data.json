@@ -1,0 +1,72 @@
+{
+  "links": {
+    "clips": [],
+    "intros": [],
+    "songs": [],
+    "plugin-ins": [
+      {
+        "name": "video copilot",
+        "url": "https://drive.google.com/drive/folders/1yrL9wjIqQPRoKoDwPEpgO5SrUXWdkFDX",
+        "size": "Desconhecido"
+      }
+    ],
+    "presets-am": [
+      {
+        "name": "jhsdkjhsdsd",
+        "url": "https://drive.google.com/drive/folders/1yrL9wjIqQPRoKoDwPEpgO5SrUXWdkFDX",
+        "size": "Desconhecido"
+      }
+    ],
+    "presets-ae": []
+  },
+  "categories": {
+    "clips": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    },
+    "intros": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    },
+    "songs": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    },
+    "plugin-ins": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    },
+    "presets-am": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    },
+    "presets-ae": {
+      "customTitle": null,
+      "customDescription": null,
+      "bannerUrl": null,
+      "iconUrl": null,
+      "footerText": null
+    }
+  },
+  "mainMenu": {
+    "customTitle": null,
+    "customDescription": null,
+    "bannerUrl": null,
+    "footerText": null
+  }
+}

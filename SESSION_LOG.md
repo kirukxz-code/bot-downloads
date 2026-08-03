@@ -1,30 +1,28 @@
 # SESSION_LOG
 
 ## Onde paramos / Próximos passos
-- Bot reestruturado para sistema de **botões personalizáveis** (cada recurso = um botão com ícone próprio).
-- Tudo editável pelo bot via `/menu` (menu privado por usuário).
-- Falta apenas: instalar um token válido no `.env` e registrar/rodar o bot.
-- Próximo passo pendente: testar o bot ao vivo 100%.
+- **REVERSÃO COMPLETA** para a versão original do GitHub (`d35564e`).
+- O bot voltou ao menu fixo no canal com dropdown de categorias (forma como funcionava no início).
+- Token que funciona está no Railway. Verificar via `/resetmenu` ou `node deploy-commands.js` que o menu fixo aparece no canal.
 
 ## Histórico
 
-### [03/08/2026] - Reestruturação para menu de botões
-Arquivos alterados:
-- `index.js` (reescrito completo)
-- `db.json` (nova estrutura: `{main, itens[]}`, seed com os 20 recursos de exemplo)
-- `deploy-commands.js` (agora só registra `/menu`)
-- Removidos: `categorias.json`, `menu.json`, `links.json`, `data.json`
+### [03/08/2026] - REVERSÃO para versão original do GitHub
+Arquivos alterados (restaurados do commit `d35564e`):
+- `index.js` (versão original - menu fixo + dropdown de categorias)
+- `deploy-commands.js` (versão original)
+- `data.json`, `db.json`, `links.json`
+- `.env.example`, `.gitignore`, `README.md`, `package.json`, `package-lock.json`, `discloud.config`
 
 O que foi feito:
-- Novo modelo de dados: cada item tem `id, icone, titulo, sub, cor, links[]`.
-- Botão `/menu` abre menu **privado (ephemeral)** por usuário — ninguém vê nem mexe no menu do outro.
-- Cada recurso vira um botão com emoji/ícone definido pelo admin.
-- Admin (cargo 1490764325156294777) pode pelo próprio menu:
-  - ➕ Novo Botão (criar item com ícone, nome, subtítulo, cor)
-  - ⚙️ Configurar (título, descrição, banner, rodapé do menu)
-  - Em cada item: ➕ Adicionar Link, 🗑️ Remover Link, ✏️ Editar, ❌ Excluir
-- Paginação automática se houvermais de 25 botões (5 por fileira, até 5 fileiras).
-- Verificação de dono em todas as interações (bloqueia acesso cruzado entre usuários).
+- Removidas todas as reestruturações (botões personalizáveis, seletor, volume Railway, etc.) por decisão do usuário.
+- O usuário pediu para voltar ao estado que funcionava.
 
-Pendências / Bugs:
-- Não testado ao vivo (token inválido no `.env` bloqueia o login).
+O que funcionava (referência):
+- Posta menu fixo no canal `1533540675264708648`.
+- Dropdown de categorias: Clips, Intros, Songs, Plugins, Presets AM, Presets AE.
+- Admin (cargo `1490764325156294777`) pode adicionar/remover/personalizar via botões no menu fixo.
+- `/recursos` abre o mesmo menu.
+
+Pendências:
+- Confirmar que o Railway deployou a versão revertida e que o menu aparece no canal.

@@ -1,0 +1,109 @@
+{
+  "clips": [
+    {
+      "name": "Pack Clips 1",
+      "url": "https://exemplo.com/clips1.zip",
+      "size": "150 MB"
+    },
+    {
+      "name": "Pack Clips 2",
+      "url": "https://exemplo.com/clips2.zip",
+      "size": "200 MB"
+    },
+    {
+      "name": "Clips Gaming",
+      "url": "https://exemplo.com/gaming-clips.zip",
+      "size": "300 MB"
+    }
+  ],
+  "intros": [
+    {
+      "name": "Intro Pack Moderno",
+      "url": "https://exemplo.com/intros-moderno.zip",
+      "size": "50 MB"
+    },
+    {
+      "name": "Intro Pack Gaming",
+      "url": "https://exemplo.com/intros-gaming.zip",
+      "size": "80 MB"
+    },
+    {
+      "name": "Intro Minimalista",
+      "url": "https://exemplo.com/intros-minimal.zip",
+      "size": "30 MB"
+    }
+  ],
+  "songs": [
+    {
+      "name": "Lo-fi Beats",
+      "url": "https://exemplo.com/lofi.zip",
+      "size": "100 MB"
+    },
+    {
+      "name": "Epic Music Pack",
+      "url": "https://exemplo.com/epic-music.zip",
+      "size": "250 MB"
+    },
+    {
+      "name": "Retro Wave",
+      "url": "https://exemplo.com/retrowave.zip",
+      "size": "180 MB"
+    }
+  ],
+  "plugin-ins": [
+    {
+      "name": "Plugin Pack Premiere",
+      "url": "https://exemplo.com/plugins-premiere.zip",
+      "size": "500 MB"
+    },
+    {
+      "name": "Plugin Pack DaVinci",
+      "url": "https://exemplo.com/plugins-davinci.zip",
+      "size": "400 MB"
+    },
+    {
+      "name": "Transições Pro",
+      "url": "https://exemplo.com/transicoes-pro.zip",
+      "size": "150 MB"
+    },
+    {
+      "name": "packs de plugins",
+      "url": "https://drive.google.com/drive/folders/1yrL9wjIqQPRoKoDwPEpgO5SrUXWdkFDX",
+      "size": "Desconhecido"
+    }
+  ],
+  "presets-am": [
+    {
+      "name": "Presets AM Color",
+      "url": "https://exemplo.com/presets-am-color.zip",
+      "size": "20 MB"
+    },
+    {
+      "name": "Presets AM Text",
+      "url": "https://exemplo.com/presets-am-text.zip",
+      "size": "15 MB"
+    },
+    {
+      "name": "Presets AM Effects",
+      "url": "https://exemplo.com/presets-am-effects.zip",
+      "size": "30 MB"
+    }
+  ],
+  "presets-ae": [
+    {
+      "name": "Presets AE Motion",
+      "url": "https://exemplo.com/presets-ae-motion.zip",
+      "size": "40 MB"
+    },
+    {
+      "name": "Presets AE Particles",
+      "url": "https://exemplo.com/presets-ae-particles.zip",
+      "size": "35 MB"
+    },
+    {
+      "name": "Presets AE Transitions",
+      "url": "https://exemplo.com/presets-ae-transitions.zip",
+      "size": "25 MB"
+    }
+  ]
+}
