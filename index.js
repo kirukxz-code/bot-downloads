@@ -424,6 +424,17 @@ cliente.on(Events.InteractionCreate, async i => {
         const admin = ehAdmin(i.member);
         return i.reply({ ...payloadMenu(0, admin, userId), ephemeral: true });
       }
+      if (i.commandName === 'limparmenu') {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        await i.deferReply({ ephemeral: true });
+        let apagadas = 0;
+        try {
+          const messages = await i.channel.messages.fetch({ limit: 100 });
+          const botMsgs = messages.filter(m => m.author.id === cliente.user.id).map(m => m);
+          for (const m of botMsgs) { await m.delete().catch(()=>{}); apagadas++; }
+        } catch (e) { console.error('limparmenu erro:', e.message); }
+        return i.editReply({ embeds: [sucesso(`Limpeza`, `${apagadas} mensagem(ns) antiga(s) do bot apagadas. Agora use ${negrito('/menu')}.`)] });
+      }
     }
 
     if (i.isButton()) {

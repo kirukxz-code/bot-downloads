@@ -2,7 +2,8 @@ require('dotenv').config();
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 const cmds = [
-  new SlashCommandBuilder().setName('menu').setDescription('Abre o menu de downloads (privado)')
+  new SlashCommandBuilder().setName('menu').setDescription('Abre o menu de downloads (privado)'),
+  new SlashCommandBuilder().setName('limparmenu').setDescription('[ADMIN] Apaga mensagens antigas do bot no canal').setDefaultMemberPermissions(0)
 ].map(c => c.toJSON());
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
