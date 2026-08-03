@@ -1,11 +1,35 @@
 # SESSION_LOG
 
 ## Onde paramos / Próximos passos
-- **REVERSÃO COMPLETA** para a versão original do GitHub (`d35564e`).
-- O bot voltou ao menu fixo no canal com dropdown de categorias (forma como funcionava no início).
-- Token que funciona está no Railway. Verificar via `/resetmenu` ou `node deploy-commands.js` que o menu fixo aparece no canal.
+- **CATEGORIAS DINÂMICAS** + **sem duplicação de menu** implementadas.
+- "← Menu" fecha a mensagem privada da categoria (`back` usa `deleteReply`), deixando só o menu fixo do canal.
+- Para testar: COMMIT + PUSH para o Railway atualizar (usuário ainda via versão antiga no canal).
+- Testar: criar/editar/excluir categoria e fluxo voltar ao menu.
 
 ## Histórico
+
+### [03/08/2026] - Sem duplicação de menu ao voltar
+Arquivos alterados:
+- `index.js`
+
+O que foi feito:
+- Botão `back` (`← Menu`): agora chama `i.deferUpdate()` + `i.deleteReply()` para FECHAR a mensagem privada da categoria. Fallback (se falhar) edita a mensagem mostrando só o embed, sem componentes.
+- Removido `criarMenuPrincipal()` (dropdown) da visualização de dentro da categoria (`pick_cat`, `delsel_`, modal `add_`, modal `cfg_`) — agora a pasta mostra só embed + botões admin.
+- Resultado: ao voltar, o usuário vê apenas o menu fixo no canal; não cria menu duplicado.
+
+### [03/08/2026] - Categorias dinâmicas (criar/editar/excluir)
+Arquivos alterados:
+- `index.js`
+
+O que foi feito:
+- `CATEGORIAS` fixa virou `CATEGORIAS_PADRAO` (seed inicial) + `DB.cats` salvo no `db.json`.
+- `obterCategorias()` lê do `DB.cats`; `obterConfigCategoria()` tem fallback para padrão.
+- `slugificar()` gera a chave (ex: "Games" → `games`) a partir do nome no modal.
+- Botões admin no menu fixo: `➕ Nova Categoria` (modal com nome/emoji/desc/cor) e `⚙️ Menu Principal` (abre o modal `cfg_main`, que já existia mas não tinha gatilho).
+- Botão `💀 Excluir Cat.` na barra de navegação da categoria (admin), com confirmação `Sim, excluir`/`Cancelar`.
+- Handler `delcat_` checado ANTES de `del_` (prefixo evita conflito).
+- Migração automática: se `DB.cats` não existir, é criado a partir de `CATEGORIAS_PADRAO`; itens antigos preservados.
+- db.json existente tem chave `categories` (legado) — ignorada, sem conflito.
 
 ### [03/08/2026] - REVERSÃO para versão original do GitHub
 Arquivos alterados (restaurados do commit `d35564e`):

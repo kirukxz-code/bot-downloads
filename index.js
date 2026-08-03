@@ -21,7 +21,7 @@ const cliente = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const CATEGORIAS = {
+const CATEGORIAS_PADRAO = {
   clips: { label: 'Clips', defaultEmoji: '🎬', defaultDesc: 'Vídeos curtos e clipes', defaultColor: 0xED4245 },
   intros: { label: 'Intros', defaultEmoji: '🎞️', defaultDesc: 'Intros para vídeos/streams', defaultColor: 0xF47FFF },
   songs: { label: 'Songs', defaultEmoji: '🎵', defaultDesc: 'Músicas e trilhas sonoras', defaultColor: 0x43B581 },
@@ -52,24 +52,39 @@ function negrito(t) { return `**${t}**`; }
 
 const DB = carregarDB();
 const LINKS = DB.links || {};
-Object.keys(CATEGORIAS).forEach(k => { LINKS[k] = Array.isArray(LINKS[k]) ? LINKS[k] : []; });
 DB.links = LINKS;
 DB.cfg = DB.cfg || {};
-Object.keys(CATEGORIAS).forEach(k => { DB.cfg[k] = DB.cfg[k] || {}; });
 DB.main = DB.main || {};
 
+if (!DB.cats || typeof DB.cats !== 'object') {
+  DB.cats = {};
+  Object.entries(CATEGORIAS_PADRAO).forEach(([k, v]) => { DB.cats[k] = { label: v.label, emoji: v.defaultEmoji, desc: v.defaultDesc, color: v.defaultColor }; });
+}
+Object.keys(DB.cats).forEach(k => {
+  LINKS[k] = Array.isArray(LINKS[k]) ? LINKS[k] : [];
+  DB.cfg[k] = DB.cfg[k] || {};
+});
+salvarDB(DB);
+
+function obterCategorias() { return DB.cats || {}; }
+
 function obterConfigCategoria(chave) {
-  const cat = CATEGORIAS[chave];
+  const padrao = CATEGORIAS_PADRAO[chave] || {};
+  const cat = DB.cats[chave] || {};
   const cfg = DB.cfg[chave] || {};
   return {
-    titulo: cfg.titulo || cat.label,
-    emoji: cfg.emoji || cat.defaultEmoji,
-    desc: cfg.desc || cat.defaultDesc,
-    cor: cfg.cor || cat.defaultColor,
+    titulo: cfg.titulo || cat.label || padrao.label || chave,
+    emoji: cfg.emoji || cat.emoji || padrao.defaultEmoji || '📄',
+    desc: cfg.desc || cat.desc || padrao.defaultDesc || '',
+    cor: cfg.cor || cat.color || padrao.defaultColor || CORES.accent,
     banner: urlValida(cfg.banner) ? cfg.banner : null,
     icone: urlValida(cfg.icone) ? cfg.icone : null,
     rodape: cfg.rodape || null
   };
+}
+
+function slugificar(t) {
+  return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 40);
 }
 
 function obterConfigPrincipal() {
@@ -84,7 +99,7 @@ function obterConfigPrincipal() {
 
 function criarEmbedPrincipal() {
   const cfg = obterConfigPrincipal();
-  const campos = Object.entries(CATEGORIAS).map(([k, v]) => {
+  const campos = Object.entries(obterCategorias()).map(([k, v]) => {
     const cc = obterConfigCategoria(k);
     return {
       name: `${cc.emoji}  ${negrito(cc.titulo)}`,
@@ -139,7 +154,7 @@ function criarMenuPrincipal() {
     new StringSelectMenuBuilder()
       .setCustomId('pick_cat')
       .setPlaceholder('🔽  Escolha uma categoria...')
-      .addOptions(Object.entries(CATEGORIAS).map(([k, v]) => {
+      .addOptions(Object.entries(obterCategorias()).map(([k, v]) => {
         const cc = obterConfigCategoria(k);
         return new StringSelectMenuOptionBuilder()
           .setLabel(cc.titulo)
@@ -150,14 +165,32 @@ function criarMenuPrincipal() {
   );
 }
 
+function criarBotoesAdminMenu() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('novacat').setLabel('Nova Categoria').setStyle(ButtonStyle.Success).setEmoji('➕'),
+    new ButtonBuilder().setCustomId('cfgmain').setLabel('Menu Principal').setStyle(ButtonStyle.Primary).setEmoji('⚙️')
+  );
+}
+
 function criarBotoesNavegacao(chave, admin) {
   const botoes = [new ButtonBuilder().setCustomId('back').setLabel('← Menu').setStyle(ButtonStyle.Secondary).setEmoji('🏠')];
   if (admin) botoes.push(
     new ButtonBuilder().setCustomId(`add_${chave}`).setLabel('Adicionar').setStyle(ButtonStyle.Success).setEmoji('➕'),
     new ButtonBuilder().setCustomId(`del_${chave}`).setLabel('Remover').setStyle(ButtonStyle.Danger).setEmoji('🗑️'),
-    new ButtonBuilder().setCustomId(`cfg_${chave}`).setLabel('Personalizar').setStyle(ButtonStyle.Primary).setEmoji('⚙️')
+    new ButtonBuilder().setCustomId(`cfg_${chave}`).setLabel('Personalizar').setStyle(ButtonStyle.Primary).setEmoji('⚙️'),
+    new ButtonBuilder().setCustomId(`delcat_${chave}`).setLabel('Excluir Cat.').setStyle(ButtonStyle.Danger).setEmoji('💀')
   );
   return new ActionRowBuilder().addComponents(botoes);
+}
+
+function criarModalNovaCategoria() {
+  return new ModalBuilder().setCustomId('novacat').setTitle('➕ Nova Categoria')
+    .addComponents(
+      new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('nome').setLabel('Nome (ex: Games)').setStyle(TextInputStyle.Short).setRequired(true).setMaxLength(40).setPlaceholder('Ex: Games')),
+      new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('emoji').setLabel('Emoji/Ícone (ex: 🎮)').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(10).setPlaceholder('📄')),
+      new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('desc').setLabel('Descrição').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(200).setPlaceholder('Ex: Jogos e mods')),
+      new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('cor').setLabel('Cor HEX (ex: #7289DA)').setStyle(TextInputStyle.Short).setRequired(false).setMaxLength(20).setPlaceholder(CORES.accent.toString(16).padStart(6, '0')))
+    );
 }
 
 function criarModalAdicionar(chave) {
@@ -256,7 +289,7 @@ async function postarMenuFixo() {
     }
   } catch {}
 
-  const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
+  const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] });
   fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id, chId: ch.id }));
   console.log('✅ Menu fixo postado');
 }
@@ -273,7 +306,7 @@ async function garantirMenuExiste() {
       console.log('🔄 Menu deletado, repostando...');
       return postarMenuFixo();
     }
-    await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] }).catch(()=>{});
+    await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] }).catch(()=>{});
   } catch {
     return postarMenuFixo();
   }
@@ -313,8 +346,8 @@ cliente.on(Events.InteractionCreate, async i => {
         const admin = ehAdmin(i.member);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, admin);
-        try { await i.reply({ embeds: [emb], components: [criarMenuPrincipal(), nav], ephemeral: true }); }
-        catch { await atualizarSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav], ephemeral: true }); }
+        try { await i.reply({ embeds: [emb], components: [nav], ephemeral: true }); }
+        catch { await atualizarSeguro(i, { embeds: [emb], components: [nav], ephemeral: true }); }
       }
       if (i.customId.startsWith('delsel_')) {
         if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Apenas admins.')], ephemeral: true });
@@ -323,15 +356,52 @@ cliente.on(Events.InteractionCreate, async i => {
         const removido = (LINKS[chave] || []).splice(idx, 1)[0]; DB.links = LINKS; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, true);
-        await atualizarSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        await atualizarSeguro(i, { embeds: [emb], components: [nav] });
         await responderSeguro(i, { embeds: [sucesso('Removido', negrito(`${removido?.nome || 'item'}`))], ephemeral: true });
       }
     }
 
     if (i.isButton()) {
       if (i.customId === 'back') {
-        await atualizarSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
+        try {
+          await i.deferUpdate();
+          await i.deleteReply().catch(()=>{});
+        } catch {
+          await atualizarSeguro(i, { embeds: [criarEmbedPrincipal()], components: [] });
+        }
         return;
+      }
+      if (i.customId === 'novacat') {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        return i.showModal(criarModalNovaCategoria());
+      }
+      if (i.customId === 'cfgmain') {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        return i.showModal(criarModalConfigPrincipal());
+      }
+      if (i.customId.startsWith('delcat_')) {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        const chave = i.customId.replace('delcat_', '');
+        const cc = obterConfigCategoria(chave);
+        const botoes = new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId(`confdel_${chave}`).setLabel('Sim, excluir').setStyle(ButtonStyle.Danger).setEmoji('⚠️'),
+          new ButtonBuilder().setCustomId('cancel').setLabel('Cancelar').setStyle(ButtonStyle.Secondary)
+        );
+        return responderSeguro(i, { embeds: [erro('Excluir categoria', `Excluir ${negrito(cc.titulo)} e todos os itens? Essa ação **não pode ser desfeita**.`)], components: [botoes], ephemeral: true });
+      }
+      if (i.customId === 'cancel') {
+        return responderSeguro(i, { embeds: [sucesso('Cancelado', 'Nada foi alterado.')], ephemeral: true });
+      }
+      if (i.customId.startsWith('confdel_')) {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        const chave = i.customId.replace('confdel_', '');
+        delete DB.cats[chave];
+        delete DB.cfg[chave];
+        delete LINKS[chave];
+        DB.links = LINKS;
+        salvarDB(DB);
+        await responderSeguro(i, { embeds: [sucesso('Categoria excluída', `${negrito(chave)} removida.`)], ephemeral: true });
+        return garantirMenuExiste();
       }
       if (i.customId.startsWith('add_')) {
         if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
@@ -355,6 +425,32 @@ cliente.on(Events.InteractionCreate, async i => {
 
     if (i.isModalSubmit()) {
       if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+      if (i.customId === 'novacat') {
+        const nome = i.fields.getTextInputValue('nome').trim();
+        let chave = slugificar(nome);
+        if (!chave) return responderSeguro(i, { embeds: [erro('Nome inválido', 'Informe um nome válido.')], ephemeral: true });
+        if (chave.length > 30) chave = chave.slice(0, 30);
+        if (DB.cats[chave]) return responderSeguro(i, { embeds: [erro('Já existe', `Categoria ${negrito(chave)} já existe. Use outro nome.`)], ephemeral: true });
+        let cor = CORES.accent;
+        const corInput = i.fields.getTextInputValue('cor');
+        if (corInput) {
+          const limpo = corInput.replace('#', '').replace('0x', '');
+          const parsed = parseInt(limpo, 16);
+          if (!isNaN(parsed)) cor = parsed;
+        }
+        DB.cats[chave] = {
+          label: nome,
+          emoji: i.fields.getTextInputValue('emoji') || '📄',
+          desc: i.fields.getTextInputValue('desc') || '',
+          color: cor
+        };
+        DB.cfg[chave] = {};
+        LINKS[chave] = [];
+        DB.links = LINKS;
+        salvarDB(DB);
+        await responderSeguro(i, { embeds: [sucesso('Categoria criada', `${negrito(obterConfigCategoria(chave).titulo)} adicionada ao menu.`)], ephemeral: true });
+        return garantirMenuExiste();
+      }
       if (i.customId.startsWith('add_')) {
         const chave = i.customId.replace('add_', '');
         const n = i.fields.getTextInputValue('n'), u = i.fields.getTextInputValue('u'), s = i.fields.getTextInputValue('s') || 'Desconhecido';
@@ -362,7 +458,7 @@ cliente.on(Events.InteractionCreate, async i => {
         LINKS[chave].push({ nome: n, url: u, tamanho: s }); DB.links = LINKS; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, true);
-        return atualizarModalSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        return atualizarModalSeguro(i, { embeds: [emb], components: [nav] });
       }
       if (i.customId.startsWith('cfg_')) {
         const chave = i.customId.replace('cfg_', '');
@@ -384,7 +480,7 @@ cliente.on(Events.InteractionCreate, async i => {
         }; salvarDB(DB);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, true);
-        return atualizarModalSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        return atualizarModalSeguro(i, { embeds: [emb], components: [nav] });
       }
       if (i.customId === 'cfg_main') {
         DB.main = {
@@ -394,7 +490,7 @@ cliente.on(Events.InteractionCreate, async i => {
           rodape: i.fields.getTextInputValue('rodape') || null
         }; salvarDB(DB);
         garantirMenuExiste();
-        return atualizarModalSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
+        return atualizarModalSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] });
       }
     }
   } catch (e) { console.error('Erro interação:', e); }
