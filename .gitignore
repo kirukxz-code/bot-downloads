@@ -3,3 +3,4 @@ node_modules/
 menu.json
 *.log
 discloud.zip
+*.zip

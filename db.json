@@ -1,39 +1,30 @@
 {
-  "links": {
-    "clips": [],
-    "intros": [],
-    "songs": [],
-    "plugin-ins": [
-      {
-        "name": "video copilot",
-        "url": "https://drive.google.com/drive/folders/1yrL9wjIqQPRoKoDwPEpgO5SrUXWdkFDX",
-        "size": "Desconhecido"
-      }
-    ],
-    "presets-am": [],
-    "presets-ae": []
+  "main": {
+    "titulo": "Downloads",
+    "desc": "Testados e com guia de instalação para facilitar o processo.\nSe o seu antivírus detectar algo, é apenas o ativador do programa.\n\nEscolha o que deseja baixar!",
+    "banner": null,
+    "rodape": null
   },
-  "categories": {
-    "clips": {},
-    "intros": {},
-    "songs": {},
-    "plugin-ins": {},
-    "presets-am": {},
-    "presets-ae": {}
-  },
-  "main": {},
-  "cfg": {
-    "clips": {},
-    "intros": {},
-    "songs": {},
-    "plugin-ins": {
-      "title": null,
-      "desc": null,
-      "banner": null,
-      "icon": null,
-      "foot": null
-    },
-    "presets-am": {},
-    "presets-ae": {}
-  }
+  "itens": [
+    { "id": "it01", "icone": "▶", "titulo": "Video Copilot", "sub": "(Twitch, Saber, Element3D e todos os outros)", "cor": 0x7289DA, "links": [] },
+    { "id": "it02", "icone": "▶", "titulo": "Boris FX - Sapphire", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it03", "icone": "▶", "titulo": "Red Giant 2026 - Red Giant 2024", "sub": "(BulletLooks, Trapcode, VFXSuite, Universe)", "cor": 0x7289DA, "links": [] },
+    { "id": "it04", "icone": "▶", "titulo": "HitFilm", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it05", "icone": "▶", "titulo": "Frischluft Blur - Bokeh - Diopter", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it06", "icone": "▶", "titulo": "Deep Glow - Deep Glow 2", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it07", "icone": "▶", "titulo": "Displacer Pro", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it08", "icone": "▶", "titulo": "Pix Dither - Signal - Omino Suite - Glitchify", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it09", "icone": "▶", "titulo": "Pixel Encoder - Pixel Sorter - Pixel Stretch", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it10", "icone": "▶", "titulo": "RSMB - Twixtor", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it11", "icone": "▶", "titulo": "Plexus - Nebulosity", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it12", "icone": "▶", "titulo": "LaForge Suite", "sub": "(Crate's Godrays, LightWrap e +42 Efeitos...)", "cor": 0x7289DA, "links": [] },
+    { "id": "it13", "icone": "▶", "titulo": "BAO Bones", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it14", "icone": "▶", "titulo": "FilmConvert Nitrate - Halation - Haze", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it15", "icone": "▶", "titulo": "DigitalAnarchy", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it16", "icone": "▶", "titulo": "Gaussian Splatting", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it17", "icone": "▶", "titulo": "Tracery", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it18", "icone": "▶", "titulo": "Quick Depth", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it19", "icone": "▶", "titulo": "Odometer - Digit Fiddler", "sub": "", "cor": 0x7289DA, "links": [] },
+    { "id": "it20", "icone": "▶", "titulo": "Shadow Studio 3", "sub": "", "cor": 0x7289DA, "links": [] }
+  ]
 }
