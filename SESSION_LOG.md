@@ -1,10 +1,8 @@
 # SESSION_LOG
 
 ## Onde paramos / Próximos passos
-- **CATEGORIAS DINÂMICAS** + **sem duplicação de menu** + **painel admin privado** implementadas.
-- Menu fixo mostra APENAS o dropdown (usuários normais não veem botões admin).
-- Admin usa **`/menu`** para abrir painel privado com `➕ Nova Categoria` e `⚙️ Menu Principal`.
-- Para testar: COMMIT + PUSH + rodar `deploy-commands.js` (registra `/menu`).
+- **CONCLUÍDO E VALIDADO PELO USUÁRIO**: categorias dinâmicas, painel admin privado via `/menu`, menu fixo único (1 só) para todos os cargos/membros, e "← Menu" fecha a categoria sem criar duplicados.
+- Nada pendente no momento.
 
 ## Histórico
 
