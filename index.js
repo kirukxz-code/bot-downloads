@@ -30,6 +30,7 @@ function caminhoDB() {
     || __dirname;
   return path.join(montagem, 'db.json');
 }
+const ARQUIVO_DB = caminhoDB();
 
 const CORES = { glow: 0x00D4FF, ok: 0x3BA55C, err: 0xED4245, item: 0x7289DA };
 
