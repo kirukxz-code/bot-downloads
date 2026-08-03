@@ -34,6 +34,8 @@ function caminhoDB() {
   return path.join(montagem, 'db.json');
 }
 const ARQUIVO_DB = caminhoDB();
+const ARQUIVO_MENU = path.join(path.dirname(ARQUIVO_DB), 'menu.json');
+const CANAL_FIXO = process.env.CANAL_FIXO || '1533540675264708648';
 
 const CORES = { glow: 0x00D4FF, ok: 0x3BA55C, err: 0xED4245, item: 0x7289DA };
 
@@ -58,6 +60,7 @@ function carregarDB() {
 function salvarDB(d) {
   fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
   fs.writeFileSync(ARQUIVO_DB, JSON.stringify(d, null, 2));
+  atualizarMenuFixo().catch(() => {});
 }
 
 function ehAdmin(m) { return m?.roles?.cache?.has(CARGO_ADMIN) || m?.permissions?.has(PermissionFlagsBits.Administrator); }
@@ -274,6 +277,73 @@ function payloadItem(item, admin, userId) {
   return { embeds: [criarEmbedItem(item)], components: criarBotoesItem(item, admin, userId) };
 }
 
+function criarBotoesMenuFixo(pag) {
+  const rows = [];
+  const inicio = pag * MAX_BOTOES_POR_PAGINA;
+  const itensPagina = DB.itens.slice(inicio, inicio + MAX_BOTOES_POR_PAGINA);
+
+  for (let i = 0; i < itensPagina.length; i += 5) {
+    const row = new ActionRowBuilder();
+    for (const it of itensPagina.slice(i, i + 5)) {
+      row.addComponents(
+        new ButtonBuilder()
+          .setCustomId(`fx_item_${it.id}`)
+          .setLabel(it.titulo.slice(0, 80))
+          .setEmoji(it.icone || '📄')
+          .setStyle(ButtonStyle.Primary)
+      );
+    }
+    rows.push(row);
+  }
+
+  const nav = new ActionRowBuilder();
+  if (pag > 0) nav.addComponents(new ButtonBuilder().setCustomId(`fx_pag_${pag - 1}`).setLabel('◀ Anterior').setStyle(ButtonStyle.Secondary));
+  if (inicio + MAX_BOTOES_POR_PAGINA < DB.itens.length) nav.addComponents(new ButtonBuilder().setCustomId(`fx_pag_${pag + 1}`).setLabel('Próxima ▶').setStyle(ButtonStyle.Secondary));
+  if (nav.components.length) rows.push(nav);
+
+  return rows;
+}
+
+function payloadMenuFixo(pag) {
+  return { embeds: [criarEmbedPrincipal(pag)], components: criarBotoesMenuFixo(pag) };
+}
+
+async function postarMenuFixo() {
+  const ch = cliente.channels.cache.get(CANAL_FIXO);
+  if (!ch) { console.log('❌ Canal fixo não encontrado'); return; }
+  if (fs.existsSync(ARQUIVO_MENU)) {
+    try {
+      const old = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+      const msg = await ch.messages.fetch(old.msgId).catch(() => null);
+      if (msg) await msg.delete().catch(() => {});
+    } catch {}
+  }
+  const msg = await ch.send(payloadMenuFixo(0));
+  fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id }));
+  console.log('✅ Menu fixo postado');
+}
+
+async function atualizarMenuFixo() {
+  const ch = cliente.channels.cache.get(CANAL_FIXO);
+  if (!ch) return;
+  try {
+    const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+    const msg = await ch.messages.fetch(data.msgId).catch(() => null);
+    if (msg) await msg.edit(payloadMenuFixo(0)).catch(() => {});
+  } catch {}
+}
+
+async function garantirMenuFixo() {
+  const ch = cliente.channels.cache.get(CANAL_FIXO);
+  if (!ch) return;
+  if (!fs.existsSync(ARQUIVO_MENU)) return postarMenuFixo();
+  try {
+    const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+    const msg = await ch.messages.fetch(data.msgId).catch(() => null);
+    if (!msg) return postarMenuFixo();
+  } catch { return postarMenuFixo(); }
+}
+
 async function handleAbrirItem(i, id, userId) {
   const item = acharItem(id);
   if (!item) return responderSeguro(i, { embeds: [erro('Não encontrado', 'Este botão não existe mais.')], ephemeral: true });
@@ -418,6 +488,8 @@ async function handleDelsel(i, id, userId) {
 cliente.once(Events.ClientReady, async c => {
   console.log(`✅ ${c.user.tag} online`);
   await registrarComandos();
+  await postarMenuFixo();
+  setInterval(garantirMenuFixo, 60000);
 });
 
 cliente.on(Events.InteractionCreate, async i => {
@@ -442,6 +514,18 @@ cliente.on(Events.InteractionCreate, async i => {
     }
 
     if (i.isButton()) {
+      if (i.customId.startsWith('fx_item_')) {
+        const id = i.customId.replace('fx_item_', '');
+        const item = acharItem(id);
+        if (!item) return responderSeguro(i, { embeds: [erro('Não encontrado', 'Este botão não existe mais.')], ephemeral: true });
+        const admin = ehAdmin(i.member);
+        return responderSeguro(i, { ...payloadItem(item, admin, i.user.id), ephemeral: true });
+      }
+      if (i.customId.startsWith('fx_pag_')) {
+        const pag = parseInt(i.customId.replace('fx_pag_', ''));
+        return atualizarSeguro(i, payloadMenuFixo(pag));
+      }
+
       const { prefix, id, userId } = parseCustom(i.customId);
       if (!ehDono(i, userId)) return responderSeguro(i, { embeds: [erro('Não autorizado', 'Abra seu próprio menu com /menu.')], ephemeral: true });
 
