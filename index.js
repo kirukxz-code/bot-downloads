@@ -24,7 +24,8 @@ const cliente = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const CARGO_ADMIN = '1490764325156294777';
+const CARGOS_ADMIN = (process.env.CARGOS_ADMIN || '1490764325156294777')
+  .split(',').map(s => s.trim()).filter(Boolean);
 const MAX_BOTOES_POR_PAGINA = 25;
 
 function caminhoDB() {
@@ -83,7 +84,11 @@ function salvarDB(d) {
   atualizarMenuFixo().catch(() => {});
 }
 
-function ehAdmin(m) { return m?.roles?.cache?.has(CARGO_ADMIN) || m?.permissions?.has(PermissionFlagsBits.Administrator); }
+function ehAdmin(m) {
+  if (!m) return false;
+  if (m.permissions?.has(PermissionFlagsBits.Administrator)) return true;
+  return m.roles?.cache?.some(r => CARGOS_ADMIN.includes(r.id));
+}
 function negrito(t) { return `**${t}**`; }
 
 const DB = carregarDB();
