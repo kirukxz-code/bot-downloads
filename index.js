@@ -45,17 +45,37 @@ function urlValida(url) {
 }
 
 function carregarDB() {
-  if (!fs.existsSync(ARQUIVO_DB)) {
-    const seed = path.join(__dirname, 'db.json');
-    if (fs.existsSync(seed)) {
-      try {
-        fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
-        fs.copyFileSync(seed, ARQUIVO_DB);
-      } catch {}
-    }
+  let dados = null;
+  if (fs.existsSync(ARQUIVO_DB)) {
+    try { dados = JSON.parse(fs.readFileSync(ARQUIVO_DB)); } catch {}
   }
-  if (fs.existsSync(ARQUIVO_DB)) try { return JSON.parse(fs.readFileSync(ARQUIVO_DB)); } catch {}
-  return { main: {}, itens: [] };
+  if (!dados) dados = { main: {}, itens: [] };
+
+  const seed = path.join(__dirname, 'db.json');
+  if (fs.existsSync(seed)) {
+    try {
+      const seedData = JSON.parse(fs.readFileSync(seed));
+      const precarregados = Array.isArray(seedData.itens) ? seedData.itens : [];
+      const atuais = Array.isArray(dados.itens);
+
+      // Migra formato antigo (categorias) -> itens vazios
+      if (!atuais) dados.itens = [];
+
+      // Se o banco veio sem itens (vazio/antigo), preenche com o seed
+      if (dados.itens.length === 0 && precarregados.length) {
+        dados.itens = precarregados.map(x => ({ ...x, links: Array.isArray(x.links) ? x.links : [] }));
+      }
+
+      if (!dados.main || Object.keys(dados.main).length === 0 || !dados.main.desc) {
+        dados.main = { ...(dados.main || {}), ...seedData.main };
+      }
+      dados.itens = Array.isArray(dados.itens) ? dados.itens : [];
+    } catch {}
+  }
+
+  fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
+  fs.writeFileSync(ARQUIVO_DB, JSON.stringify(dados, null, 2));
+  return dados;
 }
 function salvarDB(d) {
   fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
