@@ -277,23 +277,31 @@ async function atualizarModalSeguro(i, payload) {
   }
 }
 
-async function postarMenuFixo() {
+async function limparMenusDoBot() {
   const ch = cliente.channels.cache.get(CANAL_PERMITIDO);
-  if (!ch) return console.log('❌ Canal não encontrado');
-
-  // Apaga TODAS as mensagens do próprio bot no canal (menus antigos/duplicados)
+  if (!ch) return;
   try {
     let antes = null;
     while (true) {
       const msgs = await ch.messages.fetch({ limit: 100, before: antes || undefined });
       if (!msgs.size) break;
-      for (const [, m] of msgs) {
-        if (m.author.id === cliente.user.id) await m.delete().catch(()=>{});
+      const doBot = msgs.filter(m => m.author.id === cliente.user.id);
+      if (doBot.size) {
+        if (doBot.size === 1) await doBot.first().delete().catch(()=>{});
+        else await ch.bulkDelete(doBot, true).catch(()=>{});
       }
       antes = msgs.last().id;
       if (msgs.size < 100) break;
     }
   } catch {}
+}
+
+async function postarMenuFixo() {
+  const ch = cliente.channels.cache.get(CANAL_PERMITIDO);
+  if (!ch) return console.log('❌ Canal não encontrado');
+
+  // Apaga TODAS as mensagens do próprio bot no canal (menus antigos/duplicados)
+  await limparMenusDoBot();
 
   fs.rmSync(ARQUIVO_MENU, { force: true });
 
@@ -306,18 +314,31 @@ async function garantirMenuExiste() {
   const ch = cliente.channels.cache.get(CANAL_PERMITIDO);
   if (!ch) return;
   if (!fs.existsSync(ARQUIVO_MENU)) return postarMenuFixo();
-  
+
+  // Garante que exista apenas 1 correspondente: se houver mais de 1 menu do bot no canal, limpa tudo e repõe
   try {
-    const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
-    const msg = await ch.messages.fetch(data.msgId).catch(()=>null);
-    if (!msg) {
-      console.log('🔄 Menu deletado, repostando...');
+    let menus = 0;
+    let antes = null;
+    while (true) {
+      const msgs = await ch.messages.fetch({ limit: 100, before: antes || undefined });
+      if (!msgs.size) break;
+      menus += msgs.filter(m => m.author.id === cliente.user.id && m.components.length).size;
+      antes = msgs.last().id;
+      if (msgs.size < 100 || menus > 1) break;
+    }
+    if (menus > 1) {
+      console.log('🔄 Mais de 1 menu detectado, limpando duplicados...');
       return postarMenuFixo();
     }
-    await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] }).catch(()=>{});
-  } catch {
+  } catch {}
+
+  const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+  const msg = await ch.messages.fetch(data.msgId).catch(()=>null);
+  if (!msg) {
+    console.log('🔄 Menu deletado, repostando...');
     return postarMenuFixo();
   }
+  await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] }).catch(()=>{});
 }
 
 cliente.once(Events.ClientReady, async c => {

@@ -8,6 +8,17 @@
 
 ## Histórico
 
+### [03/08/2026] - Padrão de 1 único menu (bulkDelete + verificação periódica)
+Arquivos alterados:
+- `index.js`
+
+O que foi feito:
+- `limparMenusDoBot()`: varre o canal INTEIRO apagando todas as mensagens do bot usando `bulkDelete` (mais confiável que delete um a um, evita rate limit).
+- `postarMenuFixo()` chama `limparMenusDoBot()` antes de postar → sempre resta só 1 menu.
+- `garantirMenuExiste()` (a cada 15s): agora CONTAGEM menus do bot no canal; se encontrar mais de 1, chama `postarMenuFixo()` para limpar e repor apenas 1.
+- Padrão: qualquer duplicado/sobra de menu no canal é apagado até restar apenas o menu fixo.
+- Para ativar: rodar `/resetmenu` ou reiniciar o bot.
+
 ### [03/08/2026] - Limpeza total de menus duplicados no canal
 Arquivos alterados:
 - `index.js`
