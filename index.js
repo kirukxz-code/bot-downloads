@@ -363,10 +363,9 @@ cliente.on(Events.InteractionCreate, async i => {
 
     if (i.isButton()) {
       if (i.customId === 'back') {
-        try {
-          await i.deferUpdate();
-          await i.deleteReply().catch(()=>{});
-        } catch {
+        try { await i.deferUpdate(); } catch {}
+        try { await i.message.delete(); }
+        catch {
           await atualizarSeguro(i, { embeds: [criarEmbedPrincipal()], components: [] });
         }
         return;
