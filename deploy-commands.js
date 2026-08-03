@@ -2,6 +2,7 @@ require('dotenv').config();
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 const cmds = [
+  new SlashCommandBuilder().setName('menu').setDescription('[ADMIN] Abre o painel de administração').setDefaultMemberPermissions(0),
   new SlashCommandBuilder().setName('resetmenu').setDescription('[ADMIN] Reposta menu fixo no canal').setDefaultMemberPermissions(0),
   new SlashCommandBuilder().setName('addlink').setDescription('[ADMIN] Adiciona link')
     .addStringOption(o=>o.setName('categoria').setDescription('Categoria').setRequired(true)

@@ -165,11 +165,19 @@ function criarMenuPrincipal() {
   );
 }
 
-function criarBotoesAdminMenu() {
+function criarPainelAdmin() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('novacat').setLabel('Nova Categoria').setStyle(ButtonStyle.Success).setEmoji('➕'),
     new ButtonBuilder().setCustomId('cfgmain').setLabel('Menu Principal').setStyle(ButtonStyle.Primary).setEmoji('⚙️')
   );
+}
+
+function criarEmbedAdmin() {
+  return new EmbedBuilder()
+    .setTitle(negrito('🛠️ Painel de Administração'))
+    .setDescription('Use as opções abaixo para gerenciar o bot.\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    .setColor(CORES.accent)
+    .setTimestamp();
 }
 
 function criarBotoesNavegacao(chave, admin) {
@@ -289,7 +297,7 @@ async function postarMenuFixo() {
     }
   } catch {}
 
-  const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] });
+  const msg = await ch.send({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] });
   fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id, chId: ch.id }));
   console.log('✅ Menu fixo postado');
 }
@@ -306,7 +314,7 @@ async function garantirMenuExiste() {
       console.log('🔄 Menu deletado, repostando...');
       return postarMenuFixo();
     }
-    await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] }).catch(()=>{});
+    await msg.edit({ embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal()] }).catch(()=>{});
   } catch {
     return postarMenuFixo();
   }
@@ -333,6 +341,10 @@ cliente.on(Events.MessageDelete, async msg => {
 cliente.on(Events.InteractionCreate, async i => {
   try {
     if (i.isChatInputCommand()) {
+      if (i.commandName === 'menu') {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        return i.reply({ embeds: [criarEmbedAdmin()], components: [criarPainelAdmin()], ephemeral: true });
+      }
       if (i.commandName === 'resetmenu') {
         if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
         await i.deferReply({ ephemeral: true });
@@ -489,7 +501,7 @@ cliente.on(Events.InteractionCreate, async i => {
           rodape: i.fields.getTextInputValue('rodape') || null
         }; salvarDB(DB);
         garantirMenuExiste();
-        return atualizarModalSeguro(i, { embeds: [criarEmbedPrincipal()], components: [criarMenuPrincipal(), criarBotoesAdminMenu()] });
+        return atualizarModalSeguro(i, { embeds: [criarEmbedAdmin()], components: [criarPainelAdmin()] });
       }
     }
   } catch (e) { console.error('Erro interação:', e); }

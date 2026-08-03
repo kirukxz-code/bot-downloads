@@ -1,12 +1,23 @@
 # SESSION_LOG
 
 ## Onde paramos / Próximos passos
-- **CATEGORIAS DINÂMICAS** + **sem duplicação de menu** implementadas.
-- "← Menu" fecha a mensagem privada da categoria (`back` usa `deleteReply`), deixando só o menu fixo do canal.
-- Para testar: COMMIT + PUSH para o Railway atualizar (usuário ainda via versão antiga no canal).
-- Testar: criar/editar/excluir categoria e fluxo voltar ao menu.
+- **CATEGORIAS DINÂMICAS** + **sem duplicação de menu** + **painel admin privado** implementadas.
+- Menu fixo mostra APENAS o dropdown (usuários normais não veem botões admin).
+- Admin usa **`/menu`** para abrir painel privado com `➕ Nova Categoria` e `⚙️ Menu Principal`.
+- Para testar: COMMIT + PUSH + rodar `deploy-commands.js` (registra `/menu`).
 
 ## Histórico
+
+### [03/08/2026] - Painel admin privado via /menu
+Arquivos alterados:
+- `index.js`, `deploy-commands.js`
+
+O que foi feito:
+- Menu fixo agora mostra APENAS o dropdown de categorias (sem botões admin) — usuários normais não veem nada de admin.
+- Novo comando `/menu` (admin only): abre painel privado (ephemeral) com os botões `➕ Nova Categoria` e `⚙️ Menu Principal`.
+- `criarBotoesAdminMenu` virou `criarPainelAdmin` + `criarEmbedAdmin`; usado no painel do `/menu`.
+- Modal `cfg_main` agora volta para o painel admin após salvar (não para o menu fixo).
+- deploy-commands.js registra `/menu`.
 
 ### [03/08/2026] - Sem duplicação de menu ao voltar
 Arquivos alterados:
