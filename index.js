@@ -282,11 +282,31 @@ async function garantirMenuExiste() {
 cliente.once(Events.ClientReady, async c => {
   console.log(`✅ ${c.user.tag} online`);
   await postarMenuFixo();
-  setInterval(garantirMenuExiste, 30000);
+  setInterval(garantirMenuExiste, 15000);
+});
+
+cliente.on(Events.MessageDelete, async msg => {
+  try {
+    if (!fs.existsSync(ARQUIVO_MENU)) return;
+    const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+    if (data.msgId && msg.id === data.msgId) {
+      console.log('🔄 Menu fixo apagado, repondo imediatamente...');
+      fs.rmSync(ARQUIVO_MENU, { force: true });
+      await postarMenuFixo();
+    }
+  } catch {}
 });
 
 cliente.on(Events.InteractionCreate, async i => {
   try {
+    if (i.isChatInputCommand()) {
+      if (i.commandName === 'resetmenu') {
+        if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Admins apenas.')], ephemeral: true });
+        await i.deferReply({ ephemeral: true });
+        await postarMenuFixo();
+        return i.editReply({ embeds: [sucesso('Menu reposto', 'Menu fixo atualizado no canal.')] });
+      }
+    }
     if (i.isStringSelectMenu()) {
       if (i.customId === 'pick_cat') {
         const chave = i.values[0];
