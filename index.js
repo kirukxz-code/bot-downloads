@@ -313,7 +313,8 @@ cliente.on(Events.InteractionCreate, async i => {
         const admin = ehAdmin(i.member);
         const emb = criarEmbedCategoria(chave);
         const nav = criarBotoesNavegacao(chave, admin);
-        await atualizarSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav] });
+        try { await i.reply({ embeds: [emb], components: [criarMenuPrincipal(), nav], ephemeral: true }); }
+        catch { await atualizarSeguro(i, { embeds: [emb], components: [criarMenuPrincipal(), nav], ephemeral: true }); }
       }
       if (i.customId.startsWith('delsel_')) {
         if (!ehAdmin(i.member)) return responderSeguro(i, { embeds: [erro('Sem permissão', 'Apenas admins.')], ephemeral: true });
