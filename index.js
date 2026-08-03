@@ -322,19 +322,27 @@ function payloadMenuFixo(pag) {
   return { embeds: [criarEmbedPrincipal(pag)], components: criarSelectMenuFixo(pag) };
 }
 
+let repondoMenu = false;
+
 async function postarMenuFixo() {
-  const ch = cliente.channels.cache.get(CANAL_FIXO);
-  if (!ch) { console.log('❌ Canal fixo não encontrado'); return; }
-  if (fs.existsSync(ARQUIVO_MENU)) {
-    try {
-      const old = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
-      const msg = await ch.messages.fetch(old.msgId).catch(() => null);
-      if (msg) await msg.delete().catch(() => {});
-    } catch {}
+  if (repondoMenu) return;
+  repondoMenu = true;
+  try {
+    const ch = cliente.channels.cache.get(CANAL_FIXO);
+    if (!ch) { console.log('❌ Canal fixo não encontrado'); return; }
+    if (fs.existsSync(ARQUIVO_MENU)) {
+      try {
+        const old = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+        const msg = await ch.messages.fetch(old.msgId).catch(() => null);
+        if (msg) await msg.delete().catch(() => {});
+      } catch {}
+    }
+    const msg = await ch.send(payloadMenuFixo(0));
+    fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id }));
+    console.log('✅ Menu fixo postado');
+  } finally {
+    repondoMenu = false;
   }
-  const msg = await ch.send(payloadMenuFixo(0));
-  fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id }));
-  console.log('✅ Menu fixo postado');
 }
 
 async function atualizarMenuFixo() {
@@ -507,6 +515,7 @@ cliente.once(Events.ClientReady, async c => {
 });
 
 cliente.on(Events.MessageDelete, async msg => {
+  if (repondoMenu) return;
   try {
     if (!fs.existsSync(ARQUIVO_MENU)) return;
     const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
