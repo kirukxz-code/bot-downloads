@@ -378,7 +378,7 @@ cliente.on(Events.InteractionCreate, async i => {
         try { await i.deferUpdate(); } catch {}
         try { await i.message.delete(); }
         catch {
-          await atualizarSeguro(i, { embeds: [criarEmbedPrincipal()], components: [] });
+          try { await i.deleteReply(); } catch {}
         }
         return;
       }

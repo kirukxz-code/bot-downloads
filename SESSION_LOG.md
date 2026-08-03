@@ -8,6 +8,14 @@
 
 ## Histórico
 
+### [03/08/2026] - Remover fallback que criava menu ao voltar
+Arquivos alterados:
+- `index.js`
+
+O que foi feito:
+- Botão `back` (`← Menu`): removeu o fallback que mostrava o menu principal quando `message.delete()` falhava — isso fazia a categoria virar um menu para membros.
+- Agora: tenta `message.delete()`, se falhar tenta `deleteReply()`. NUNCA mostra menu principal.
+
 ### [03/08/2026] - Painel admin privado via /menu
 Arquivos alterados:
 - `index.js`, `deploy-commands.js`
