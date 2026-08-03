@@ -22,8 +22,14 @@ const cliente = new Client({
 });
 
 const CARGO_ADMIN = '1490764325156294777';
-const ARQUIVO_DB = path.join(__dirname, 'db.json');
 const MAX_BOTOES_POR_PAGINA = 25;
+
+function caminhoDB() {
+  const montagem = process.env.RAILWAY_VOLUME_MOUNT_PATH
+    || process.env.DATA_DIR
+    || __dirname;
+  return path.join(montagem, 'db.json');
+}
 
 const CORES = { glow: 0x00D4FF, ok: 0x3BA55C, err: 0xED4245, item: 0x7289DA };
 
@@ -33,10 +39,22 @@ function urlValida(url) {
 }
 
 function carregarDB() {
+  if (!fs.existsSync(ARQUIVO_DB)) {
+    const seed = path.join(__dirname, 'db.json');
+    if (fs.existsSync(seed)) {
+      try {
+        fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
+        fs.copyFileSync(seed, ARQUIVO_DB);
+      } catch {}
+    }
+  }
   if (fs.existsSync(ARQUIVO_DB)) try { return JSON.parse(fs.readFileSync(ARQUIVO_DB)); } catch {}
   return { main: {}, itens: [] };
 }
-function salvarDB(d) { fs.writeFileSync(ARQUIVO_DB, JSON.stringify(d, null, 2)); }
+function salvarDB(d) {
+  fs.mkdirSync(path.dirname(ARQUIVO_DB), { recursive: true });
+  fs.writeFileSync(ARQUIVO_DB, JSON.stringify(d, null, 2));
+}
 
 function ehAdmin(m) { return m?.roles?.cache?.has(CARGO_ADMIN) || m?.permissions?.has(PermissionFlagsBits.Administrator); }
 function negrito(t) { return `**${t}**`; }
