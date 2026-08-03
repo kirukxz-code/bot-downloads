@@ -322,14 +322,25 @@ function payloadMenuFixo(pag) {
   return { embeds: [criarEmbedPrincipal(pag)], components: criarSelectMenuFixo(pag) };
 }
 
+async function obterCanalFixo() {
+  try {
+    const ch = cliente.channels.cache.get(CANAL_FIXO)
+      || await cliente.channels.fetch(CANAL_FIXO).catch(() => null);
+    return ch;
+  } catch { return null; }
+}
+
 let repondoMenu = false;
 
 async function postarMenuFixo() {
   if (repondoMenu) return;
   repondoMenu = true;
   try {
-    const ch = cliente.channels.cache.get(CANAL_FIXO);
-    if (!ch) { console.log('❌ Canal fixo não encontrado'); return; }
+    const ch = await obterCanalFixo();
+    if (!ch) {
+      console.log(`❌ Canal fixo ${CANAL_FIXO} não encontrado (o bot está nesse servidor/canal?)`);
+      return;
+    }
     if (fs.existsSync(ARQUIVO_MENU)) {
       try {
         const old = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
@@ -339,14 +350,16 @@ async function postarMenuFixo() {
     }
     const msg = await ch.send(payloadMenuFixo(0));
     fs.writeFileSync(ARQUIVO_MENU, JSON.stringify({ msgId: msg.id }));
-    console.log('✅ Menu fixo postado');
+    console.log(`✅ Menu fixo postado no canal ${CANAL_FIXO}`);
+  } catch (e) {
+    console.error('❌ Falha ao postar menu fixo:', e.message);
   } finally {
     repondoMenu = false;
   }
 }
 
 async function atualizarMenuFixo() {
-  const ch = cliente.channels.cache.get(CANAL_FIXO);
+  const ch = await obterCanalFixo();
   if (!ch) return;
   try {
     const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
@@ -356,7 +369,7 @@ async function atualizarMenuFixo() {
 }
 
 async function garantirMenuFixo() {
-  const ch = cliente.channels.cache.get(CANAL_FIXO);
+  const ch = await obterCanalFixo();
   if (!ch) return;
   if (!fs.existsSync(ARQUIVO_MENU)) return postarMenuFixo();
   try {
