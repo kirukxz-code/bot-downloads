@@ -506,6 +506,18 @@ cliente.once(Events.ClientReady, async c => {
   setInterval(garantirMenuFixo, 60000);
 });
 
+cliente.on(Events.MessageDelete, async msg => {
+  try {
+    if (!fs.existsSync(ARQUIVO_MENU)) return;
+    const data = JSON.parse(fs.readFileSync(ARQUIVO_MENU));
+    if (data.msgId && msg.id === data.msgId) {
+      console.log('🔄 Menu fixo apagado, repondo imediatamente...');
+      fs.rmSync(ARQUIVO_MENU, { force: true });
+      await postarMenuFixo();
+    }
+  } catch {}
+});
+
 cliente.on(Events.InteractionCreate, async i => {
   try {
     if (i.isChatInputCommand()) {
